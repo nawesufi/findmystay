@@ -308,6 +308,14 @@ export default function Recommendations() {
                           ? r.property_type.charAt(0).toUpperCase() + r.property_type.slice(1)
                           : 'Not specified'}
                   </span>
+                  {r.gender_preference && r.gender_preference !== 'any' && (
+                    <span className="tag" style={{
+                      background: r.gender_preference === 'male' ? '#DBEAFE' : '#FCE7F3',
+                      color:      r.gender_preference === 'male' ? '#1D4ED8' : '#9D174D',
+                    }}>
+                      {r.gender_preference === 'male' ? '♂ Male only' : '♀ Female only'}
+                    </span>
+                  )}
                   {(r.distance_to_preferred_campus ?? r.distance_to_campus) != null &&
                     <span className="tag tag-green">
                       📏 {r.distance_to_preferred_campus ?? r.distance_to_campus} km from your campus

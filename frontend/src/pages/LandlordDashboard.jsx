@@ -385,8 +385,8 @@ export default function LandlordDashboard() {
     const price = Number(form.rental_price)
     if (!form.rental_price || isNaN(price) || price <= 0)
       errors.rental_price = 'Monthly rent must be a positive number.'
-    else if (price > 99999)
-      errors.rental_price = 'Monthly rent seems too high. Please enter a realistic value.'
+    else if (price > 1000)
+      errors.rental_price = 'Monthly rent cannot exceed RM 1,000.'
 
     if (form.title && /\d/.test(form.title))
       errors.title = 'Title must not contain numbers (e.g. "Single room near UiTM Seremban").'
@@ -550,12 +550,13 @@ export default function LandlordDashboard() {
                     <label className="form-label">Monthly rent (RM) *</label>
                     <input
                       className="form-input"
-                      type="number" min="1" max="99999"
+                      type="number" min="1" max="1000"
                       value={form.rental_price}
                       onChange={e => f('rental_price', e.target.value)}
                       placeholder="e.g. 450"
                       style={formErrors.rental_price ? { borderColor: '#A02D2D' } : {}}
                     />
+                    <p style={{ fontSize: '11px', color: 'var(--text2)', marginTop: '3px' }}>Maximum: RM 1,000 / month</p>
                     {formErrors.rental_price && <p style={{ color: '#A02D2D', fontSize: '11px', marginTop: '4px' }}>{formErrors.rental_price}</p>}
                   </div>
                   <div className="form-group">

@@ -144,9 +144,15 @@ export default function Profile() {
   const views     = interactions.filter(i => i.interaction_type === 'view').length
   const contacted = myEnquiries.length
   const unique    = new Set(interactions.map(i => i.property_id)).size
-  const filtered  = interactions.filter(i =>
+  const _filtered  = interactions.filter(i =>
     histFilter === 'all' || histFilter === 'contacted' || i.interaction_type === histFilter
   )
+  const _seenIds = new Set()
+  const filtered = _filtered.filter(i => {
+    if (_seenIds.has(i.property_id)) return false
+    _seenIds.add(i.property_id)
+    return true
+  })
   const TYPE_STYLE = {
     save:    { bg: '#D4EDE6', color: '#1A5E4A', icon: '❤️', label: 'Saved' },
     view:    { bg: '#EDE6F8', color: '#4D2D78', icon: '👁️', label: 'Viewed' },

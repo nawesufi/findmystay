@@ -16,13 +16,26 @@ export default function Register() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [licenseFile, setLicenseFile] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (form.role === 'houseowner' && !licenseFile) {
+      setError('Please upload your license or IC document to verify your identity.')
+      return
+    }
     setLoading(true)
     try {
-      const res = await axios.post(`${API}/auth/register`, form)
+      let res
+      if (form.role === 'houseowner') {
+        const fd = new FormData()
+        Object.entries(form).forEach(([k, v]) => fd.append(k, v))
+        fd.append('license_file', licenseFile)
+        res = await axios.post(`${API}/auth/register`, fd)
+      } else {
+        res = await axios.post(`${API}/auth/register`, form)
+      }
       Auth.setToken(res.data.token)
       Auth.setUser(res.data.user)
       navigate('/preferences')
@@ -101,6 +114,34 @@ export default function Register() {
               </select>
             </div>
           </div>
+          {/* License upload — houseowners only */}
+          {form.role === 'houseowner' && (
+            <div style={{
+              background: '#FFF8E1',
+              border: '1px solid #F9A825',
+              borderRadius: '10px',
+              padding: '14px',
+            }}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                📄 License / IC Document <span style={{ color: '#c0392b' }}>*</span>
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Upload your MyKad (IC), business license, or any document to verify you are a legitimate landlord.
+                Accepted: PDF, JPG, PNG (max 10 MB).
+              </p>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                required
+                onChange={e => setLicenseFile(e.target.files[0] || null)}
+                className="w-full text-sm text-gray-600"
+              />
+              {licenseFile && (
+                <p className="text-xs text-green-600 mt-1">✓ {licenseFile.name}</p>
+              )}
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">UiTM Campus</label>
             <select

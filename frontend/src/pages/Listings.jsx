@@ -24,10 +24,12 @@ export default function Listings() {
   const [minPrice,   setMinPrice]   = useState(150)
   const [maxPrice,   setMaxPrice]   = useState(1500)
   const [roomType,   setRoomType]   = useState('')
-  const [furnished,  setFurnished]  = useState('')
   const [sortBy,     setSortBy]     = useState('default')
+  const [filtersApplied, setFiltersApplied] = useState(false)
   const [saved,      setSaved]      = useState({})
   const [viewMode,   setViewMode]   = useState('list')
+  const [page,       setPage]       = useState(1)
+  const PAGE_SIZE = 20
 
   // Load listings when filters change
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function Listings() {
     try {
       const data = await getProperties(params)
       setListings(data || [])
+      setPage(1)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -54,7 +57,7 @@ export default function Listings() {
     if (minPrice)    params.min_price = minPrice
     if (maxPrice)    params.max_price = maxPrice
     if (roomType)    params.type      = roomType
-    if (furnished)   params.furnished = furnished
+    setFiltersApplied(!!(stateFilter || roomType || search || minPrice !== 150 || maxPrice !== 1500))
     load(params)
   }
 
@@ -64,7 +67,7 @@ export default function Listings() {
     setMinPrice(150)
     setMaxPrice(1500)
     setRoomType('')
-    setFurnished('')
+    setFiltersApplied(false)
     load()
   }
 
@@ -183,12 +186,12 @@ export default function Listings() {
                 <div className="form-group">
                   <label className="form-label">Price range (RM/month)</label>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', color: 'var(--text2)' }}>
-                    <input className="form-input" type="number"
-                      value={minPrice} onChange={e => setMinPrice(e.target.value)}
+                    <input className="form-input" type="number" min={0}
+                      value={minPrice} onChange={e => setMinPrice(Math.max(0, Number(e.target.value)))}
                       style={{ flex: 1 }} />
                     <span>—</span>
-                    <input className="form-input" type="number"
-                      value={maxPrice} onChange={e => setMaxPrice(e.target.value)}
+                    <input className="form-input" type="number" min={0}
+                      value={maxPrice} onChange={e => setMaxPrice(Math.max(0, Number(e.target.value)))}
                       style={{ flex: 1 }} />
                   </div>
                 </div>
@@ -215,18 +218,6 @@ export default function Listings() {
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {/* Furnished */}
-                <div className="form-group">
-                  <label className="form-label">Furnished</label>
-                  <select className="form-select" value={furnished}
-                    onChange={e => setFurnished(e.target.value)}>
-                    <option value="">Any</option>
-                    <option value="fully furnished">Fully furnished</option>
-                    <option value="partially furnished">Partially furnished</option>
-                    <option value="unfurnished">Unfurnished</option>
-                  </select>
                 </div>
 
                 <button className="btn btn-primary btn-block" onClick={applyFilters}>
@@ -328,30 +319,126 @@ export default function Listings() {
             {/* Listings grid / Map */}
             {!loading && listings.length > 0 && (
               viewMode === 'map' ? (
-                <MapView
-                  properties={sortedListings()}
-                  onView={p => handleView(p)}
-                  height={560}
-                />
-              ) : (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                  gap: '1rem',
-                }}>
-                  {sortedListings().map((p, i) => (
-                    <PropertyCard
-                      key={p.id}
-                      property={p}
-                      onView={handleView}
-                      onSave={handleSave}
-                      isSaved={!!saved[p.id]}
-                      badge={i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null}
-                      badgeType={i === 0 ? 'purple' : 'gold'}
-                    />
-                  ))}
-                </div>
-              )
+                !filtersApplied ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">🗺️</div>
+                    <h3>Apply filters to view map</h3>
+                    <p>Select a state, price range, or property type and click <strong>Apply filters</strong> first.</p>
+                  </div>
+                ) : (
+                  <MapView
+                    properties={sortedListings()}
+                    onView={p => handleView(p)}
+                    height={560}
+                  />
+                )
+              ) : (() => {
+                const sorted     = sortedListings()
+                const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+                const safePage   = Math.min(page, totalPages)
+                const slice      = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+                const globalOffset = (safePage - 1) * PAGE_SIZE
+                return (
+                  <>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                      gap: '1rem',
+                    }}>
+                      {slice.map((p, i) => (
+                        <PropertyCard
+                          key={p.id}
+                          property={p}
+                          onView={handleView}
+                          onSave={handleSave}
+                          isSaved={!!saved[p.id]}
+                          badge={globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null}
+                          badgeType={globalOffset + i === 0 ? 'purple' : 'gold'}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pagination controls */}
+                    {totalPages > 1 && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        marginTop: '1.5rem',
+                      }}>
+                        <button
+                          onClick={() => setPage(p => Math.max(1, p - 1))}
+                          disabled={safePage === 1}
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: '8px',
+                            border: '1px solid #E8DDD0',
+                            background: safePage === 1 ? '#F5F0EB' : '#FFFCF7',
+                            color: safePage === 1 ? '#C0B4A8' : 'var(--text)',
+                            cursor: safePage === 1 ? 'default' : 'pointer',
+                            fontSize: '13px',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>
+                          ← Prev
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                          .filter(n => n === 1 || n === totalPages || Math.abs(n - safePage) <= 2)
+                          .reduce((acc, n, i, arr) => {
+                            if (i > 0 && n - arr[i - 1] > 1) acc.push('…')
+                            acc.push(n)
+                            return acc
+                          }, [])
+                          .map((item, idx) =>
+                            item === '…' ? (
+                              <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: 'var(--text3)', fontSize: '13px' }}>…</span>
+                            ) : (
+                              <button
+                                key={item}
+                                onClick={() => setPage(item)}
+                                style={{
+                                  width: '34px', height: '34px',
+                                  borderRadius: '8px',
+                                  border: '1px solid',
+                                  borderColor: item === safePage ? '#4D2D78' : '#E8DDD0',
+                                  background: item === safePage ? '#4D2D78' : '#FFFCF7',
+                                  color: item === safePage ? '#fff' : 'var(--text)',
+                                  cursor: 'pointer',
+                                  fontSize: '13px',
+                                  fontWeight: item === safePage ? '600' : '400',
+                                  fontFamily: "'DM Sans', sans-serif",
+                                }}>
+                                {item}
+                              </button>
+                            )
+                          )
+                        }
+
+                        <button
+                          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                          disabled={safePage === totalPages}
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: '8px',
+                            border: '1px solid #E8DDD0',
+                            background: safePage === totalPages ? '#F5F0EB' : '#FFFCF7',
+                            color: safePage === totalPages ? '#C0B4A8' : 'var(--text)',
+                            cursor: safePage === totalPages ? 'default' : 'pointer',
+                            fontSize: '13px',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>
+                          Next →
+                        </button>
+                      </div>
+                    )}
+
+                    <p style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '12px', color: 'var(--text3)' }}>
+                      Page {safePage} of {totalPages} · {sorted.length} listings
+                    </p>
+                  </>
+                )
+              })())
             )}
           </main>
         </div>
