@@ -91,6 +91,12 @@ export default function Listings() {
     } catch (err) {}
   }
 
+  const sorted      = sortedListings()
+  const totalPages  = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+  const safePage    = Math.min(page, totalPages)
+  const pageSlice   = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const globalOffset = (safePage - 1) * PAGE_SIZE
+
   return (
     <div>
       <Navbar />
@@ -332,113 +338,106 @@ export default function Listings() {
                     height={560}
                   />
                 )
-              ) : (() => {
-                const sorted     = sortedListings()
-                const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
-                const safePage   = Math.min(page, totalPages)
-                const slice      = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-                const globalOffset = (safePage - 1) * PAGE_SIZE
-                return (
-                  <>
+              ) : (
+                <>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gap: '1rem',
+                  }}>
+                    {pageSlice.map((p, i) => (
+                      <PropertyCard
+                        key={p.id}
+                        property={p}
+                        onView={handleView}
+                        onSave={handleSave}
+                        isSaved={!!saved[p.id]}
+                        badge={globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null}
+                        badgeType={globalOffset + i === 0 ? 'purple' : 'gold'}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Pagination controls */}
+                  {totalPages > 1 && (
                     <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                      gap: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      marginTop: '1.5rem',
                     }}>
-                      {slice.map((p, i) => (
-                        <PropertyCard
-                          key={p.id}
-                          property={p}
-                          onView={handleView}
-                          onSave={handleSave}
-                          isSaved={!!saved[p.id]}
-                          badge={globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null}
-                          badgeType={globalOffset + i === 0 ? 'purple' : 'gold'}
-                        />
-                      ))}
-                    </div>
+                      <button
+                        onClick={() => setPage(pg => Math.max(1, pg - 1))}
+                        disabled={safePage === 1}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid #E8DDD0',
+                          background: safePage === 1 ? '#F5F0EB' : '#FFFCF7',
+                          color: safePage === 1 ? '#C0B4A8' : 'var(--text)',
+                          cursor: safePage === 1 ? 'default' : 'pointer',
+                          fontSize: '13px',
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}>
+                        ← Prev
+                      </button>
 
-                    {/* Pagination controls */}
-                    {totalPages > 1 && (
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        marginTop: '1.5rem',
-                      }}>
-                        <button
-                          onClick={() => setPage(p => Math.max(1, p - 1))}
-                          disabled={safePage === 1}
-                          style={{
-                            padding: '6px 14px',
-                            borderRadius: '8px',
-                            border: '1px solid #E8DDD0',
-                            background: safePage === 1 ? '#F5F0EB' : '#FFFCF7',
-                            color: safePage === 1 ? '#C0B4A8' : 'var(--text)',
-                            cursor: safePage === 1 ? 'default' : 'pointer',
-                            fontSize: '13px',
-                            fontFamily: "'DM Sans', sans-serif",
-                          }}>
-                          ← Prev
-                        </button>
-
-                        {Array.from({ length: totalPages }, (_, idx) => idx + 1)
-                          .filter(n => n === 1 || n === totalPages || Math.abs(n - safePage) <= 2)
-                          .reduce((acc, n, i, arr) => {
-                            if (i > 0 && n - arr[i - 1] > 1) acc.push('…')
-                            acc.push(n)
-                            return acc
-                          }, [])
-                          .map((item, idx) =>
-                            item === '…' ? (
-                              <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: 'var(--text3)', fontSize: '13px' }}>…</span>
-                            ) : (
-                              <button
-                                key={item}
-                                onClick={() => setPage(item)}
-                                style={{
-                                  width: '34px', height: '34px',
-                                  borderRadius: '8px',
-                                  border: '1px solid',
-                                  borderColor: item === safePage ? '#4D2D78' : '#E8DDD0',
-                                  background: item === safePage ? '#4D2D78' : '#FFFCF7',
-                                  color: item === safePage ? '#fff' : 'var(--text)',
-                                  cursor: 'pointer',
-                                  fontSize: '13px',
-                                  fontWeight: item === safePage ? '600' : '400',
-                                  fontFamily: "'DM Sans', sans-serif",
-                                }}>
-                                {item}
-                              </button>
-                            )
+                      {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                        .filter(n => n === 1 || n === totalPages || Math.abs(n - safePage) <= 2)
+                        .reduce((acc, n, i, arr) => {
+                          if (i > 0 && n - arr[i - 1] > 1) acc.push('…')
+                          acc.push(n)
+                          return acc
+                        }, [])
+                        .map((item, idx) =>
+                          item === '…' ? (
+                            <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: 'var(--text3)', fontSize: '13px' }}>…</span>
+                          ) : (
+                            <button
+                              key={item}
+                              onClick={() => setPage(item)}
+                              style={{
+                                width: '34px', height: '34px',
+                                borderRadius: '8px',
+                                border: '1px solid',
+                                borderColor: item === safePage ? '#4D2D78' : '#E8DDD0',
+                                background: item === safePage ? '#4D2D78' : '#FFFCF7',
+                                color: item === safePage ? '#fff' : 'var(--text)',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                                fontWeight: item === safePage ? '600' : '400',
+                                fontFamily: "'DM Sans', sans-serif",
+                              }}>
+                              {item}
+                            </button>
                           )
-                        }
+                        )
+                      }
 
-                        <button
-                          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                          disabled={safePage === totalPages}
-                          style={{
-                            padding: '6px 14px',
-                            borderRadius: '8px',
-                            border: '1px solid #E8DDD0',
-                            background: safePage === totalPages ? '#F5F0EB' : '#FFFCF7',
-                            color: safePage === totalPages ? '#C0B4A8' : 'var(--text)',
-                            cursor: safePage === totalPages ? 'default' : 'pointer',
-                            fontSize: '13px',
-                            fontFamily: "'DM Sans', sans-serif",
-                          }}>
-                          Next →
-                        </button>
-                      </div>
-                    )}
+                      <button
+                        onClick={() => setPage(pg => Math.min(totalPages, pg + 1))}
+                        disabled={safePage === totalPages}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid #E8DDD0',
+                          background: safePage === totalPages ? '#F5F0EB' : '#FFFCF7',
+                          color: safePage === totalPages ? '#C0B4A8' : 'var(--text)',
+                          cursor: safePage === totalPages ? 'default' : 'pointer',
+                          fontSize: '13px',
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}>
+                        Next →
+                      </button>
+                    </div>
+                  )}
 
-                    <p style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '12px', color: 'var(--text3)' }}>
-                      Page {safePage} of {totalPages} · {sorted.length} listings
-                    </p>
-                  </>
-                )
-              })())
+                  <p style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '12px', color: 'var(--text3)' }}>
+                    Page {safePage} of {totalPages} · {sorted.length} listings
+                  </p>
+                </>
+              )
             )}
           </main>
         </div>
