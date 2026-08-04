@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import { Auth, getRecommendations, getInteractions, formatPrice, propertyImg, logInteraction } from '../api'
+import { Auth, getRecommendations, getInteractions, getStats, formatPrice, propertyImg, logInteraction } from '../api'
 
 // ── Shared mini property card ─────────────────────────────────────────────────
 function MiniCard({ prop, rank, badge, badgeColor, badgeBg, onClick }) {
@@ -319,6 +319,17 @@ function ReturningHome({ user, firstName }) {
 
 // ── Guest landing page ────────────────────────────────────────────────────────
 function GuestHome() {
+  const [listingsLabel, setListingsLabel] = useState('6,000+')
+
+  useEffect(() => {
+    getStats()
+      .then(data => {
+        const total = data?.total_properties
+        if (total) setListingsLabel(`${(Math.floor(total / 100) * 100).toLocaleString()}+`)
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div>
       <Navbar />
@@ -472,7 +483,7 @@ function GuestHome() {
             borderTop: '1px solid rgba(255,255,255,0.12)', flexWrap: 'wrap',
           }}>
             {[
-              { n: '6,000+', l: 'Active listings' },
+              { n: listingsLabel, l: 'Active listings' },
               { n: '3',      l: 'States covered' },
               { n: 'AI',     l: 'Hybrid algorithm' },
               { n: 'Free',   l: 'For everyone' },
@@ -624,7 +635,7 @@ function GuestHome() {
                 {[
                   { n: '1', title: 'Create account',   desc: 'Register with your UiTM email as a student' },
                   { n: '2', title: 'Set preferences',  desc: 'Tell us your campus, budget, room type and facilities' },
-                  { n: '3', title: 'Get matched',      desc: 'Our AI analyses 6,000+ listings and returns your top 10' },
+                  { n: '3', title: 'Get matched',      desc: `Our AI analyses ${listingsLabel} listings and returns your top 10` },
                   { n: '4', title: 'Contact landlord', desc: 'Send an enquiry directly through FindMyStay@UiTM' },
                 ].map(step => (
                   <div key={step.n} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
