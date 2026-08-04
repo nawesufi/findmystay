@@ -140,19 +140,25 @@ export default function Profile() {
   const initials = user?.full_name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 
   /* ── History helpers ── */
-  const saves     = interactions.filter(i => i.interaction_type === 'save').length
-  const views     = interactions.filter(i => i.interaction_type === 'view').length
+  const dedupeByProperty = (arr) => {
+    const seen = new Set()
+    return arr.filter(i => {
+      if (seen.has(i.property_id)) return false
+      seen.add(i.property_id)
+      return true
+    })
+  }
   const contacted = myEnquiries.length
   const unique    = new Set(interactions.map(i => i.property_id)).size
   const _filtered  = interactions.filter(i =>
     histFilter === 'all' || histFilter === 'contacted' || i.interaction_type === histFilter
   )
-  const _seenIds = new Set()
-  const filtered = _filtered.filter(i => {
-    if (_seenIds.has(i.property_id)) return false
-    _seenIds.add(i.property_id)
-    return true
-  })
+  const filtered = dedupeByProperty(_filtered)
+  // Pill/tab counts reflect distinct listings, not raw interaction events,
+  // so they match the number of cards actually shown under each tab.
+  const saves = dedupeByProperty(interactions.filter(i => i.interaction_type === 'save')).length
+  const views = dedupeByProperty(interactions.filter(i => i.interaction_type === 'view')).length
+  const allCount = dedupeByProperty(interactions).length
   const TYPE_STYLE = {
     save:    { bg: '#D4EDE6', color: '#1A5E4A', icon: '❤️', label: 'Saved' },
     view:    { bg: '#EDE6F8', color: '#4D2D78', icon: '👁️', label: 'Viewed' },
@@ -494,7 +500,6 @@ export default function Profile() {
                             { label: 'WiFi',        value: 'wifi' },
                             { label: 'Parking',     value: 'parking' },
                             { label: 'Laundromat',  value: 'washing machine' },
-                            { label: 'Dobi',        value: 'dobi' },
                             { label: 'Mini mart',   value: 'mini market' },
                           ].map(({ label: fac, value: key }) => {
                             const selected = (prefs.preferred_facilities || '')
@@ -611,7 +616,7 @@ export default function Profile() {
                       flexWrap: 'wrap',
                     }}>
                       {[
-                        { key: 'all',       label: `All (${interactions.length})` },
+                        { key: 'all',       label: `All (${allCount})` },
                         { key: 'save',      label: `❤️ Saved (${saves})` },
                         { key: 'view',      label: `👁️ Viewed (${views})` },
                         { key: 'contacted', label: `✉️ Contacted (${contacted})` },

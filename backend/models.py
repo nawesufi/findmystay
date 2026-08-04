@@ -84,7 +84,6 @@ class Houseowner(db.Model):
     phone_number        = db.Column(db.String(20))
     verification_status = db.Column(db.String(20), default="pending")
     company_name        = db.Column(db.String(100))
-    license_file        = db.Column(db.String(255))
     registered_at       = db.Column(db.DateTime, default=datetime.utcnow)
 
     properties = db.relationship("Property", backref="owner",
@@ -166,6 +165,7 @@ class Property(db.Model):
             "status":             self.status,
             "sentiment_score":    self.sentiment_score,
             "adjusted_rating":    self.adjusted_rating,
+            "review_count":       len(self.feedbacks),
             "image_url":          self.image_url,
             "created_at":         self.created_at.isoformat(),
         }

@@ -10,6 +10,14 @@ export const CAMPUSES = {
   'UiTM Pasir Gudang (Johor)': { lat: 1.5267, lng: 103.8780 },
 }
 
+// Approximate state-centre coordinates — used when a property has no lat/lng
+// (mirrors campus_config.json's state_fallback_coords)
+export const STATE_FALLBACK_COORDS = {
+  'Negeri Sembilan': { lat: 2.7297, lng: 101.9381 },
+  'Melaka':          { lat: 2.1966, lng: 102.2501 },
+  'Johor':           { lat: 1.4927, lng: 103.7414 },
+}
+
 export function haversineKm(lat1, lng1, lat2, lng2) {
   const R    = 6371
   const dLat = (lat2 - lat1) * Math.PI / 180

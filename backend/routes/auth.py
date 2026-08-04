@@ -17,19 +17,11 @@
 ================================================================================
 """
 
-import os
-import uuid
-from flask              import Blueprint, request, jsonify, current_app
+from flask              import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security  import generate_password_hash, check_password_hash
-from werkzeug.utils     import secure_filename
 from extensions         import db
 from models             import User, Houseowner
-
-ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg', 'png'}
-
-def _allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Blueprint groups all auth routes under /api/auth
 auth_bp = Blueprint("auth", __name__)
@@ -58,9 +50,7 @@ def register():
         "budget_max":  700
     }
     """
-    # Support both JSON (students) and multipart/form-data (houseowners with file)
-    is_multipart = request.content_type and "multipart/form-data" in request.content_type
-    data = request.form if is_multipart else (request.get_json() or {})
+    data = request.get_json() or {}
 
     # Validate required fields
     required = ["email", "password", "full_name"]
@@ -68,19 +58,7 @@ def register():
         if not data.get(field):
             return jsonify({"error": f"{field} is required"}), 400
 
-    # Houseowners must upload a license/IC document
     role = data.get("role", "student")
-    license_filename = None
-    if role == "houseowner":
-        file = request.files.get("license_file")
-        if not file or file.filename == "":
-            return jsonify({"error": "License or IC document is required for house owners"}), 400
-        if not _allowed_file(file.filename):
-            return jsonify({"error": "Only PDF, JPG, or PNG files are accepted"}), 400
-        ext = file.filename.rsplit('.', 1)[1].lower()
-        license_filename = f"{uuid.uuid4().hex}.{ext}"
-        upload_folder = current_app.config["LICENSE_UPLOAD_FOLDER"]
-        file.save(os.path.join(upload_folder, license_filename))
 
     # Check email is not already registered
     if User.query.filter_by(email=data["email"]).first():
@@ -111,7 +89,6 @@ def register():
             user_id      = user.id,
             phone_number = data.get("phone_number"),
             company_name = data.get("company_name"),
-            license_file = license_filename,
         )
         db.session.add(houseowner)
 

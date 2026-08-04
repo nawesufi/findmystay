@@ -20,7 +20,7 @@
 
 import os
 from dotenv import load_dotenv
-from flask import Flask, send_from_directory
+from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from extensions import db
@@ -47,12 +47,6 @@ def create_app():
 
     # JWT tokens expire after 24 hours — user must log in again after that
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 86400   # seconds
-
-    # Upload folder for landlord license documents
-    upload_folder = os.path.join(os.path.dirname(__file__), "uploads", "licenses")
-    os.makedirs(upload_folder, exist_ok=True)
-    app.config["LICENSE_UPLOAD_FOLDER"] = upload_folder
-    app.config["MAX_CONTENT_LENGTH"]    = 10 * 1024 * 1024  # 10 MB limit
 
     # ── Initialise extensions ─────────────────────────────────────────────────
     db.init_app(app)        # connect SQLAlchemy to this app
@@ -82,11 +76,6 @@ def create_app():
     app.register_blueprint(enquiries_bp,     url_prefix="/api/enquiries")
     app.register_blueprint(stats_bp,         url_prefix="/api/stats")
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
-
-    # ── Serve uploaded license files ──────────────────────────────────────────
-    @app.route("/api/uploads/licenses/<filename>")
-    def serve_license(filename):
-        return send_from_directory(app.config["LICENSE_UPLOAD_FOLDER"], filename)
 
     # ── Create all database tables on first run ───────────────────────────────
     with app.app_context():
@@ -146,13 +135,6 @@ def _migrate(db):
         if patched:
             conn.commit()
             print(f"OK Migrated: classified property_type for {patched} properties.")
-
-    # ── houseowners table ─────────────────────────────────────────────────────
-    ho_cols = {col["name"] for col in inspector.get_columns("houseowners")}
-    with db.engine.connect() as conn:
-        if "license_file" not in ho_cols:
-            conn.execute(text("ALTER TABLE houseowners ADD COLUMN license_file VARCHAR(255)"))
-            conn.commit()
 
     # ── enquiries table ───────────────────────────────────────────────────────
     enq_cols = {col["name"] for col in inspector.get_columns("enquiries")}

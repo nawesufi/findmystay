@@ -28,16 +28,16 @@ export default function Login() {
   const [loginPassword, setLoginPassword] = useState('')
 
   // Register form state
-  const [regRole,      setRegRole]      = useState('')
-  const [regName,      setRegName]      = useState('')
-  const [regEmail,     setRegEmail]     = useState('')
-  const [regPassword,  setRegPassword]  = useState('')
-  const [regConfirm,   setRegConfirm]   = useState('')
-  const [regCampus,    setRegCampus]    = useState('')
-  const [regPhone,     setRegPhone]     = useState('')
-  const [regCompany,   setRegCompany]   = useState('')
-  const [regTouched,   setRegTouched]   = useState({})
-  const [submitTried,  setSubmitTried]  = useState(false)
+  const [regRole,        setRegRole]        = useState('')
+  const [regName,        setRegName]        = useState('')
+  const [regEmail,       setRegEmail]       = useState('')
+  const [regPassword,    setRegPassword]    = useState('')
+  const [regConfirm,     setRegConfirm]     = useState('')
+  const [regCampus,      setRegCampus]      = useState('')
+  const [regPhone,       setRegPhone]       = useState('')
+  const [regCompany,     setRegCompany]     = useState('')
+  const [regTouched,     setRegTouched]     = useState({})
+  const [submitTried,    setSubmitTried]    = useState(false)
 
   // ── Validation helpers ────────────────────────────────────────
   const vName = v => {
@@ -110,17 +110,13 @@ export default function Login() {
     setLoading(true)
     try {
       const payload = {
-        full_name: regName,
-        email:     regEmail,
-        password:  regPassword,
-        role:      regRole,
-      }
-      if (regRole === 'student') {
-        payload.uitm_campus = regCampus
-
-      } else {
-        payload.phone_number = regPhone
-        payload.company_name = regCompany
+        full_name:    regName,
+        email:        regEmail,
+        password:     regPassword,
+        role:         regRole,
+        uitm_campus:  regCampus,
+        phone_number: regPhone,
+        company_name: regCompany,
       }
       await register(payload)
       setLoginEmail(regEmail)

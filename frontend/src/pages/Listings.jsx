@@ -352,7 +352,11 @@ export default function Listings() {
                         onView={handleView}
                         onSave={handleSave}
                         isSaved={!!saved[p.id]}
-                        badge={globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null}
+                        badge={
+                          p.review_count > 0
+                            ? (globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null)
+                            : null
+                        }
                         badgeType={globalOffset + i === 0 ? 'purple' : 'gold'}
                       />
                     ))}

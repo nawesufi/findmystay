@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import MapView from '../components/MapView'
-import { CAMPUSES, haversineKm, findNearestCampus } from '../campuses'
+import { CAMPUSES, STATE_FALLBACK_COORDS, haversineKm, findNearestCampus } from '../campuses'
 import { getProperty, logInteraction, submitFeedback, getPropertyFeedback, submitEnquiry, getStudentEnquiries, getPreferences, formatPrice, Auth, propertyImg } from '../api'
 
 const DUMMY_CONTACTS = [
@@ -177,13 +177,17 @@ export default function PropertyDetail() {
 
   if (!prop) return null
 
-  const pick = (arr) => arr[prop.id % arr.length]
-
   // Prefer saved preferences campus; fall back to registration campus
   const userCampus = userPrefs?.uitm_campus || Auth.getUser()?.uitm_campus || ''
 
-  // Calculate distances from property coordinates (if available)
+  // Calculate distances from property coordinates (if available);
+  // fall back to an approximate state-centre coordinate when the property
+  // has no lat/lng, so distance is still a real (if approximate) figure.
   const hasCoords = prop.latitude && prop.longitude
+  const stateFallback = !hasCoords ? STATE_FALLBACK_COORDS[prop.state] : null
+  const originLat = hasCoords ? prop.latitude : stateFallback?.lat
+  const originLng = hasCoords ? prop.longitude : stateFallback?.lng
+  const isApprox  = !hasCoords && !!stateFallback
 
   // Distance to user's preferred campus (calculated live from lat/lng)
   const preferredCampusPos = userCampus
@@ -192,12 +196,12 @@ export default function PropertyDetail() {
       )?.[1]
     : null
 
-  const preferredDist = hasCoords && preferredCampusPos
-    ? haversineKm(prop.latitude, prop.longitude, preferredCampusPos.lat, preferredCampusPos.lng)
+  const preferredDist = originLat && originLng && preferredCampusPos
+    ? haversineKm(originLat, originLng, preferredCampusPos.lat, preferredCampusPos.lng)
     : null
 
   // Nearest UiTM campus (calculated live from lat/lng)
-  const nearest = hasCoords ? findNearestCampus(prop.latitude, prop.longitude) : null
+  const nearest = originLat && originLng ? findNearestCampus(originLat, originLng) : null
 
   // Decide what to show in the distance card
   const preferredIsSameAsNearest = nearest && userCampus &&
@@ -208,21 +212,25 @@ export default function PropertyDetail() {
     : 'Distance to nearest UiTM'
 
   const distanceValue = preferredDist != null
-    ? `${preferredDist} km`
+    ? `${isApprox ? '~' : ''}${preferredDist} km`
     : prop.distance_to_campus
       ? `${prop.distance_to_campus} km`
-      : pick(['< 1 km', '< 2 km', '< 3 km', '< 5 km'])
+      : 'Not specified'
 
-  // Side note: nearest campus if it differs from preferred
-  const nearestNote = nearest && !preferredIsSameAsNearest
-    ? `Nearest: ${nearest.name} — ${nearest.dist} km`
-    : null
+  // Side note: nearest campus if it differs from preferred, plus an approx. flag
+  const nearestNote = [
+    nearest && !preferredIsSameAsNearest ? `Nearest: ${nearest.name} — ${nearest.dist} km` : null,
+    isApprox ? 'Estimated from state, exact location not available' : null,
+  ].filter(Boolean).join(' · ') || null
+
+  const GENDER_LABELS = { any: 'Any', male: 'Male only', female: 'Female only' }
+  const genderLabel = GENDER_LABELS[(prop.gender_preference || 'any').toLowerCase()] || 'Any'
 
   const details = [
-    { label: 'Property type', value: prop.property_type || pick(['Room', 'Unit']) },
-    { label: 'Furnished',     value: prop.furnished     || pick(['Fully furnished', 'Partially furnished', 'Fully furnished', 'Unfurnished']) },
+    { label: 'Property type', value: prop.property_type || 'Not specified' },
+    { label: 'Furnished',     value: prop.furnished     || 'Not specified' },
     { label: distanceLabel,   value: distanceValue, note: nearestNote },
-    { label: 'Gender',        value: prop.gender_preference || pick(['Any', 'Female only', 'Male only', 'Any']) },
+    { label: 'Gender',        value: genderLabel },
   ]
 
   return (
@@ -279,7 +287,7 @@ export default function PropertyDetail() {
                     {prop.property_type?.toLowerCase() === 'unit' ? 'per unit' : 'per room'}
                   </div>
                   <p style={{ fontSize: '13px', color: 'var(--text2)', marginTop: '4px' }}>
-                    {prop.source} · {prop.status}
+                    {prop.source === 'synthetic' ? 'Community listing' : prop.source} · {prop.status}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
