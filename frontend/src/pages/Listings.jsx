@@ -10,6 +10,7 @@ import Navbar from '../components/Navbar'
 import PropertyCard from '../components/PropertyCard'
 import MapView from '../components/MapView'
 import { getProperties, logInteraction, Auth } from '../api'
+import { CAMPUSES } from '../constants'
 
 const FILTER_CHIPS = ['All states', 'Negeri Sembilan', 'Melaka', 'Johor']
 
@@ -21,6 +22,7 @@ export default function Listings() {
   const [error,      setError]      = useState('')
   const [search,      setSearch]      = useState('')
   const [stateFilter, setStateFilter] = useState('')
+  const [campusFilter, setCampusFilter] = useState('')
   const [minPrice,   setMinPrice]   = useState(150)
   const [maxPrice,   setMaxPrice]   = useState(1500)
   const [roomType,   setRoomType]   = useState('')
@@ -54,16 +56,18 @@ export default function Listings() {
     const params = {}
     if (search)      params.search    = search
     if (stateFilter) params.state     = stateFilter
+    if (campusFilter) params.campus   = campusFilter
     if (minPrice)    params.min_price = minPrice
     if (maxPrice)    params.max_price = maxPrice
     if (roomType)    params.type      = roomType
-    setFiltersApplied(!!(stateFilter || roomType || search || minPrice !== 150 || maxPrice !== 1500))
+    setFiltersApplied(!!(stateFilter || campusFilter || roomType || search || minPrice !== 150 || maxPrice !== 1500))
     load(params)
   }
 
   function clearFilters() {
     setSearch('')
     setStateFilter('')
+    setCampusFilter('')
     setMinPrice(150)
     setMaxPrice(1500)
     setRoomType('')
@@ -185,6 +189,16 @@ export default function Listings() {
                     <option>Negeri Sembilan</option>
                     <option>Melaka</option>
                     <option>Johor</option>
+                  </select>
+                </div>
+
+                {/* Nearest UiTM campus */}
+                <div className="form-group">
+                  <label className="form-label">Nearest UiTM campus</label>
+                  <select className="form-select" value={campusFilter}
+                    onChange={e => setCampusFilter(e.target.value)}>
+                    <option value="">All campuses</option>
+                    {CAMPUSES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
 
