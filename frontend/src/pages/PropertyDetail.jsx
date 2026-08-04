@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import MapView from '../components/MapView'
 import { CAMPUSES, STATE_FALLBACK_COORDS, haversineKm, findNearestCampus } from '../campuses'
-import { getProperty, logInteraction, submitFeedback, getPropertyFeedback, submitEnquiry, getStudentEnquiries, getPreferences, formatPrice, Auth, propertyImg } from '../api'
+import { getProperty, getProperties, logInteraction, submitFeedback, getPropertyFeedback, submitEnquiry, getStudentEnquiries, getPreferences, formatPrice, Auth, propertyImg } from '../api'
 
 const DUMMY_CONTACTS = [
   { name: 'Ahmad Faizal bin Razali',  phone: '011-2345 6789', company: 'Faizal Property Management' },
@@ -99,9 +99,8 @@ export default function PropertyDetail() {
     getProperty(id).then(current => {
       if (!current) return
       getProperties({
-        state:         current.state,
-        property_type: current.property_type,
-        limit:         7,
+        state: current.state,
+        type:  current.property_type,
       }).then(data => {
         const list = Array.isArray(data) ? data : (data?.properties || [])
         setRelated(list.filter(p => String(p.id) !== String(id)).slice(0, 4))
