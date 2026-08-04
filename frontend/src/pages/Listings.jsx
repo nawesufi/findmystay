@@ -331,6 +331,15 @@ export default function Listings() {
                     <h3>Apply filters to view map</h3>
                     <p>Select a state, price range, or property type and click <strong>Apply filters</strong> first.</p>
                   </div>
+                ) : listings.length > 30 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">🗺️</div>
+                    <h3>Too many listings to show on the map</h3>
+                    <p>
+                      {listings.length} listings match your filters — the map only supports up to 30 at a time.
+                      Narrow down your <strong>price range</strong> (or state / property type) and apply filters again.
+                    </p>
+                  </div>
                 ) : (
                   <MapView
                     properties={sortedListings()}
