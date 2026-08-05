@@ -166,7 +166,7 @@ function ReturningHome({ user, firstName }) {
   }
 
   return (
-    <div style={{ background: '#FBF8F2', minHeight: '100vh' }}>
+    <div style={{ background: '#FBF8F2', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
 
       {/* ── Welcome banner ─────────────────────────────────────── */}
@@ -191,14 +191,14 @@ function ReturningHome({ user, firstName }) {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <Link to="/listings"        className="btn btn-ghost" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.25)' }}>Browse all</Link>
               <Link to="/recommendations" className="btn btn-ghost" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.25)' }}>All recommendations</Link>
-              <Link to="/profile"         style={{ fontSize: '12px', fontWeight: '600', padding: '6px 14px', borderRadius: '7px', background: '#C9A96E', color: '#2D2519', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>My profile</Link>
+              <Link to="/profile" className="btn" style={{ fontSize: '12px', fontWeight: '600', background: '#C9A96E', color: '#2D2519' }}>My profile</Link>
             </div>
           </div>
         </div>
       </div>
       <hr className="gold-divider" />
 
-      <div className="container" style={{ padding: '2rem 1.5rem 3rem' }}>
+      <div className="container" style={{ padding: '2rem 1.5rem 3rem', flex: 1 }}>
 
         {/* ── Section 1: Based on what other students liked ─────── */}
         <section style={{ marginBottom: '2.5rem' }}>
