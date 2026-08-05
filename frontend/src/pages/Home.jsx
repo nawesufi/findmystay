@@ -217,15 +217,15 @@ function ReturningHome({ user, firstName }) {
           {!recsLoading && recs.length === 0 && (
             <div style={{
               background: '#EDE6F8', borderLeft: '3px solid #4D2D78',
-              borderRadius: '8px', padding: '1rem 1.25rem',
-              display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
+              borderRadius: '8px', padding: '1.5rem 2rem',
+              display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap',
             }}>
-              <span style={{ fontSize: '24px', flexShrink: 0 }}>⚙️</span>
+              <span style={{ fontSize: '32px', flexShrink: 0 }}>⚙️</span>
               <div style={{ flex: 1, minWidth: '220px' }}>
-                <p style={{ fontWeight: '600', color: '#4D2D78', marginBottom: '2px', fontSize: '14px' }}>
+                <p style={{ fontWeight: '600', color: '#4D2D78', marginBottom: '4px' }}>
                   Set your preferences to unlock personalised picks
                 </p>
-                <p style={{ color: 'var(--text2)', fontSize: '12px' }}>
+                <p style={{ color: 'var(--text2)', fontSize: '13px' }}>
                   Tell us your campus, budget and room type — we'll find your best matches.
                 </p>
               </div>
@@ -270,15 +270,15 @@ function ReturningHome({ user, firstName }) {
           {!histLoading && history.length === 0 && (
             <div style={{
               background: '#FBF8F2', borderLeft: '3px solid #C9A96E',
-              borderRadius: '8px', padding: '1rem 1.25rem',
-              display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
+              borderRadius: '8px', padding: '1.5rem 2rem',
+              display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap',
             }}>
-              <span style={{ fontSize: '24px', flexShrink: 0 }}>👀</span>
+              <span style={{ fontSize: '28px', flexShrink: 0 }}>👀</span>
               <div style={{ flex: 1, minWidth: '220px' }}>
-                <p style={{ fontWeight: '600', color: 'var(--text)', marginBottom: '2px', fontSize: '14px' }}>
+                <p style={{ fontWeight: '600', color: 'var(--text)', marginBottom: '4px' }}>
                   No viewing history yet
                 </p>
-                <p style={{ color: 'var(--text2)', fontSize: '12px' }}>
+                <p style={{ color: 'var(--text2)', fontSize: '13px' }}>
                   Browse listings and save the ones you like — they'll appear here and improve your recommendations.
                 </p>
               </div>
