@@ -527,7 +527,7 @@ def seed_extra_ratings():
             pref_type = pref.preferred_type or "room"
         else:
             state     = user.uitm_campus or ""
-            price_max = float(user.budget_max or 600)
+            price_max = 600.0
             dist_max  = 5.0
             pref_type = "room"
         matched_state = next(
