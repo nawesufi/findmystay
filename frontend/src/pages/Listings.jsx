@@ -80,7 +80,14 @@ export default function Listings() {
     if (sortBy === 'price_asc')  return copy.sort((a, b) => a.rental_price - b.rental_price)
     if (sortBy === 'price_desc') return copy.sort((a, b) => b.rental_price - a.rental_price)
     if (sortBy === 'distance')   return copy.sort((a, b) => (a.distance_to_campus || 99) - (b.distance_to_campus || 99))
-    return copy
+    // Default "Relevance" order: real, highly-rated listings float to the top.
+    // Array.sort is stable, so listings without reviews (score -1) keep their
+    // original server order (newest first) relative to each other.
+    return copy.sort((a, b) => {
+      const ra = a.review_count > 0 ? a.adjusted_rating : -1
+      const rb = b.review_count > 0 ? b.adjusted_rating : -1
+      return rb - ra
+    })
   }
 
   function handleView(prop) {
@@ -377,10 +384,10 @@ export default function Listings() {
                         isSaved={!!saved[p.id]}
                         badge={
                           p.review_count > 0
-                            ? (globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null)
+                            ? (sortBy === 'default' && globalOffset + i === 0 ? 'Top rated' : p.adjusted_rating >= 4 ? 'Highly rated' : null)
                             : null
                         }
-                        badgeType={globalOffset + i === 0 ? 'purple' : 'gold'}
+                        badgeType={sortBy === 'default' && globalOffset + i === 0 ? 'purple' : 'gold'}
                       />
                     ))}
                   </div>
