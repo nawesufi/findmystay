@@ -269,18 +269,20 @@ function ReturningHome({ user, firstName }) {
 
           {!histLoading && history.length === 0 && (
             <div style={{
-              background: '#FBF8F2', border: '1px dashed #C9A96E',
-              borderRadius: '12px', padding: '2rem',
-              textAlign: 'center',
+              background: '#FBF8F2', borderLeft: '3px solid #C9A96E',
+              borderRadius: '8px', padding: '1rem 1.25rem',
+              display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
             }}>
-              <p style={{ fontSize: '28px', marginBottom: '8px' }}>👀</p>
-              <p style={{ fontWeight: '600', color: 'var(--text)', marginBottom: '4px' }}>
-                No viewing history yet
-              </p>
-              <p style={{ color: 'var(--text2)', fontSize: '13px', marginBottom: '1rem' }}>
-                Browse listings and save the ones you like — they'll appear here and improve your recommendations.
-              </p>
-              <Link to="/listings" className="btn btn-primary btn-sm">Browse listings</Link>
+              <span style={{ fontSize: '24px', flexShrink: 0 }}>👀</span>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <p style={{ fontWeight: '600', color: 'var(--text)', marginBottom: '2px', fontSize: '14px' }}>
+                  No viewing history yet
+                </p>
+                <p style={{ color: 'var(--text2)', fontSize: '12px' }}>
+                  Browse listings and save the ones you like — they'll appear here and improve your recommendations.
+                </p>
+              </div>
+              <Link to="/listings" className="btn btn-primary btn-sm" style={{ flexShrink: 0 }}>Browse listings</Link>
             </div>
           )}
 
