@@ -216,20 +216,20 @@ function ReturningHome({ user, firstName }) {
 
           {!recsLoading && recs.length === 0 && (
             <div style={{
-              background: '#EDE6F8', border: '1px solid #C4A8E8',
-              borderRadius: '12px', padding: '1.5rem 2rem',
-              display: 'flex', alignItems: 'center', gap: '1.25rem',
+              background: '#EDE6F8', borderLeft: '3px solid #4D2D78',
+              borderRadius: '8px', padding: '1rem 1.25rem',
+              display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
             }}>
-              <span style={{ fontSize: '32px', flexShrink: 0 }}>⚙️</span>
-              <div>
-                <p style={{ fontWeight: '600', color: '#4D2D78', marginBottom: '4px' }}>
+              <span style={{ fontSize: '24px', flexShrink: 0 }}>⚙️</span>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <p style={{ fontWeight: '600', color: '#4D2D78', marginBottom: '2px', fontSize: '14px' }}>
                   Set your preferences to unlock personalised picks
                 </p>
-                <p style={{ color: 'var(--text2)', fontSize: '13px' }}>
+                <p style={{ color: 'var(--text2)', fontSize: '12px' }}>
                   Tell us your campus, budget and room type — we'll find your best matches.
                 </p>
               </div>
-              <Link to="/profile?setup=1" className="btn btn-primary btn-sm" style={{ flexShrink: 0, marginLeft: 'auto' }}>
+              <Link to="/profile?setup=1" className="btn btn-primary btn-sm" style={{ flexShrink: 0 }}>
                 Set preferences
               </Link>
             </div>
